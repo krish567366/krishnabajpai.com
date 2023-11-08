@@ -39,11 +39,10 @@ import {getClientSession} from '~/utils/client.server.ts'
 import {
   getBannerAltProp,
   getBannerTitleProp,
-  getBlogMdxListItems,
-  getMdxPage,
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
+import {getMdxPage} from '~/utils/mdx.server.tsx'
 import {
   formatNumber,
   reuseUsefulLoaderHeaders,
@@ -61,6 +60,10 @@ const handleId = 'blog-post'
 export const handle: KCDHandle = {
   id: handleId,
   getSitemapEntries: async request => {
+    if (!import.meta.env.SSR) {
+      throw Error('tried calling server-only function from client')
+    }
+    const {getBlogMdxListItems} = await import('~/utils/mdx.server.tsx')
     const pages = await getBlogMdxListItems({request})
     return pages
       .filter(page => !page.frontmatter.draft)
